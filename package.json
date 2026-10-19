@@ -1,0 +1,47 @@
+{
+  "name": "foodsourcing-cli",
+  "version": "0.1.0",
+  "description": "Open-source CLI that discovers, classifies and verifies food suppliers worldwide using web search.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "foodsourcing": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "node --import tsx --test --test-concurrency=${TEST_CONCURRENCY:-8} test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "food",
+    "sourcing",
+    "procurement",
+    "supplier-discovery",
+    "cli"
+  ],
+  "dependencies": {
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomasbetter/foodsourcing-cli.git"
+  },
+  "homepage": "https://github.com/tomasbetter/foodsourcing-cli#readme",
+  "bugs": {
+    "url": "https://github.com/tomasbetter/foodsourcing-cli/issues"
+  }
+}
