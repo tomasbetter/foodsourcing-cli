@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: CLI starts
+        run: node dist/cli.js --version
+
+  secrets:
+    name: No committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Block .env files and real-looking API keys
+        run: |
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.env\.example$'; then
+            echo "A .env file is tracked"; exit 1
+          fi
+          if git ls-files | grep -E '^out[^/]*/'; then
+            echo "Discovery output (may contain supplier contacts) is tracked"; exit 1
+          fi
+          if git grep -nE '(PARALLEL_API_KEY|x-api-key)[^A-Za-z]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_-]{30,}' -- . ':!*.md' ':!.env.example'; then
+            echo "Possible API key committed"; exit 1
+          fi
+          echo "clean"

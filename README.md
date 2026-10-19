@@ -61,5 +61,8 @@ Set `FOODSOURCING_PROVIDER` to force one. Each run is capped by `--budget` (defa
 ## Responsible use
 Respect each site's terms and robots.txt, rate limits, and data-protection law (for example GDPR) when contacting suppliers. Supplier contacts are business data; do not commit them. This is guidance, not legal advice. Provider terms (Parallel, Composio) apply to whoever runs the CLI.
 
+## Contributing and security
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get started, [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community rules, and [SECURITY.md](SECURITY.md) to report a vulnerability privately. CI runs typecheck, tests and build on Node 20, 22 and 24, plus a check that no `.env`, discovery output or API key is committed.
+
 ## License
 Apache-2.0
