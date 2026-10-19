@@ -28,7 +28,7 @@ test("mapLimit handles empty input and tiny limits", async () => {
 });
 
 test("clampConcurrency keeps values between 1 and 50", () => {
-  assert.equal(clampConcurrency(undefined), 10);
+  assert.equal(clampConcurrency(undefined), 20);
   assert.equal(clampConcurrency(Number.NaN, 7), 7);
   assert.equal(clampConcurrency(0), 1);
   assert.equal(clampConcurrency(500), 50);

@@ -20,6 +20,8 @@ export interface DiscoverOptions extends PlanOptions {
   maxResolve?: number;
   /** Parallel search/extract calls (1-50, default 10) and parallel Task runs (default 20). */
   concurrency?: number;
+  /** Queries searched per round when --target is set (default 18). Independent of concurrency. */
+  roundQueries?: number;
   enrichConcurrency?: number;
   /** Judge candidate sites with the Parallel Task API (default: on when the provider supports it). */
   enrich?: boolean;
@@ -41,16 +43,16 @@ export async function discover(provider: MeteredProvider, product: string, opts:
   const terms = productTerms(plan.product);
   log(`Planned ${plan.queries.length} queries (${plan.countries.join(", ")}; languages: ${plan.languages.join(", ")})${target ? `; target ${target} qualified suppliers` : ""}`);
 
-  const concurrency = clampConcurrency(opts.concurrency, 10);
+  const concurrency = clampConcurrency(opts.concurrency);
   const batchSize = opts.batchSize ?? 3;
-  const perRound = Math.max(concurrency * batchSize, 6);
+  const perRound = Math.max(opts.roundQueries ?? 18, batchSize);
   const maxRounds = opts.maxRounds ?? (target ? 12 : 1);
   const objective = `Find real ${plan.product} suppliers (farms, producers, exporters, importers, wholesalers) with company websites and contact details`;
   const pool = newPool();
   const useEnrich = (opts.enrich ?? true) && provider.canEnrich;
   const state: RoundState = {
     hits: [], seenUrls: new Set(), extractedHosts: new Set(), rounds: [], budgetStopped: false,
-    enrich: useEnrich ? { processor: opts.enrichProcessor ?? "base", product: plan.product, max: opts.maxEnrich ?? 40, done: 0, failed: 0, concurrency: clampConcurrency(opts.enrichConcurrency, 20) } : undefined,
+    enrich: useEnrich ? { processor: opts.enrichProcessor ?? "base", product: plan.product, max: opts.maxEnrich ?? 40, done: 0, failed: 0, concurrency: clampConcurrency(opts.enrichConcurrency) } : undefined,
   };
   if (opts.enrich && !provider.canEnrich) log(`Provider ${provider.name} does not support enrichment; using page-content checks only`);
   let cursor = 0;

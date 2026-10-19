@@ -56,13 +56,14 @@ program
   .option("--budget <n>", "maximum provider calls", "200")
   .option("--target <n>", "keep searching in rounds until this many suppliers pass the quality gate")
   .option("--max-rounds <n>", "maximum search rounds when --target is set")
-  .option("--concurrency <n>", "parallel search/extract calls, 1-50", "10")
+  .option("--concurrency <n>", "parallel search/extract calls, 1-50 (20 measured best)", "20")
+  .option("--round-queries <n>", "queries searched per round when --target is set", "18")
   .option("--enrich-concurrency <n>", "parallel Task API runs, 1-50", "20")
   .option("--no-enrich", "skip Parallel Task API judging of candidate sites (use page-content checks only)")
   .option("--enrich-processor <name>", "Task API processor: lite, base or core", "base")
   .option("--max-enrich <n>", "maximum sites judged per run (each is one billed Task run)", "40")
   .option("--no-cache", "disable the on-disk response cache")
-  .action(async (product: string, o: { concurrency: string; enrichConcurrency: string; enrich: boolean; enrichProcessor: string; maxEnrich: string; out: string; countries?: string; languages?: string; budget: string; target?: string; maxRounds?: string; cache: boolean }) => {
+  .action(async (product: string, o: { concurrency: string; roundQueries: string; enrichConcurrency: string; enrich: boolean; enrichProcessor: string; maxEnrich: string; out: string; countries?: string; languages?: string; budget: string; target?: string; maxRounds?: string; cache: boolean }) => {
     try {
       const budget = Number.parseInt(o.budget, 10);
       if (!Number.isInteger(budget) || budget < 1) return fail("--budget must be a positive integer");
@@ -72,6 +73,7 @@ program
         budget,
         enrich: o.enrich,
         concurrency: Number.parseInt(o.concurrency, 10),
+        roundQueries: Number.parseInt(o.roundQueries, 10),
         enrichConcurrency: Number.parseInt(o.enrichConcurrency, 10),
         enrichProcessor: o.enrichProcessor,
         maxEnrich: Number.parseInt(o.maxEnrich, 10),

@@ -17,10 +17,12 @@ export async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T, in
   return results;
 }
 
+/** Measured through Composio: ~174 searches/min at 20 at once, no gain at 40, slower at 60. */
+export const DEFAULT_CONCURRENCY = 20;
 export const MAX_CONCURRENCY = 50;
 
 /** Clamp a user-supplied concurrency to a safe range (1 to 50). */
-export function clampConcurrency(value: number | undefined, fallback = 10): number {
+export function clampConcurrency(value: number | undefined, fallback = DEFAULT_CONCURRENCY): number {
   if (value === undefined || !Number.isFinite(value)) return fallback;
   return Math.min(MAX_CONCURRENCY, Math.max(1, Math.floor(value)));
 }
