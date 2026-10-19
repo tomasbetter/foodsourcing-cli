@@ -66,13 +66,14 @@ export class MeteredProvider implements Provider {
   async enrich(urls: string[], opts: EnrichOptions): Promise<EnrichResult[]> {
     const inner = this.inner;
     if (!inner.enrich) throw new Error(`provider ${inner.name} does not support enrichment`);
-    const results = await this.run("enrich", urls.length, JSON.stringify({ urls, opts }), () => (inner.enrich as NonNullable<Provider["enrich"]>)(urls, opts));
+    // Only a fully successful batch is cached: a cached error would be replayed on every later run.
+    const results = await this.run("enrich", urls.length, JSON.stringify({ urls, opts }), () => (inner.enrich as NonNullable<Provider["enrich"]>)(urls, opts), (r) => r.every((x) => x.enrichment));
     // enrich() reports each site's error in its result instead of throwing, so count those here.
     this.itemFailures += results.filter((r) => !r.enrichment).length;
     return results;
   }
 
-  private async run<T>(tool: "search" | "extract" | "enrich", items: number, key: string, fn: () => Promise<T>): Promise<T> {
+  private async run<T>(tool: "search" | "extract" | "enrich", items: number, key: string, fn: () => Promise<T>, cacheable: (value: T) => boolean = () => true): Promise<T> {
     const cacheKey = `${this.inner.name}:${tool}:${key}`;
     const cached = this.cache?.get(cacheKey) as T | undefined;
     if (cached !== undefined) {
@@ -88,7 +89,7 @@ export class MeteredProvider implements Provider {
       try {
         const value = await fn();
         this.calls.push({ tool, items, ok: true, cached: false, ms: Date.now() - started });
-        this.cache?.set(cacheKey, value);
+        if (cacheable(value)) this.cache?.set(cacheKey, value);
         return value;
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err);
